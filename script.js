@@ -25,6 +25,11 @@
 
 const demosSection = document.getElementById('demos');
 
+//text to speech initialize
+const speech = new SpeechSynthesisUtterance();
+speech.lang = 'en-US';
+
+
 var model = undefined;
 
 // Before we can use COCO-SSD class we must wait for it to finish
@@ -149,8 +154,42 @@ function enableCam(event) {
 }
 
 
+
+function speak(objects_tags, count) {
+	const text = "Eye Spy detected " + count + " object. " + objects_tags;
+        speech.text = text;
+        window.speechSynthesis.speak(speech);
+
+
+	const list = document.getElementById("detected_tags");
+	list.innerHTML = text;
+
+
+
+
+	var delay = ( function() {
+	    var timer = 0;
+	    return function(callback, ms) {
+		clearTimeout (timer);
+		timer = setTimeout(callback, ms);
+	    };
+	})();
+	
+	delay(function(){
+	
+	    window.requestAnimationFrame(predictWebcam);
+	    
+	}, 4000 ); // end delay
+
+	//setTimeout(, 15000);
+	
+}
+
+
 // Prediction loop!
 function predictWebcam() {
+  objects_tags = '';
+  
   // Now let's start classifying the stream.
   model.detect(video).then(function (predictions) {
     // Remove any highlighting we did previous frame.
@@ -162,14 +201,17 @@ function predictWebcam() {
     // Now lets loop through predictions and draw them to the live view if
     // they have a high confidence score.
     console.log(predictions.length, 'predictions count');
+    
+    console.log(predictions);
+    
     for (let n = 0; n < predictions.length; n++) {
-      // If we are over 66% sure we are sure we classified it right, draw it!
-      if (predictions[n].score > 0.66) {
+      // If we are over 30% sure we are sure we classified it right, draw it!
+      if (predictions[n].score > 0.30) {
         const p = document.createElement('p');
 
 	// print object names
 	console.log(predictions[n].class);
-
+	objects_tags = objects_tags  + predictions[n].class +  ', ';
 
 
         p.innerText = predictions[n].class  + ' - with ' 
@@ -191,25 +233,34 @@ function predictWebcam() {
         liveView.appendChild(highlighter);
         liveView.appendChild(p);
         
- // text to speech code
-	//window.speechSynthesis.cancel();
-
-        //const speech = new SpeechSynthesisUtterance();
-        //speech.lang = 'en-US';
-        //const text = predictions[n].class;
-        //speech.text = text;
-        //window.speechSynthesis.speak(speech);
-
-
-
         // Store drawn objects in memory so we can delete them next time around.
         children.push(highlighter);
         children.push(p);
       }
     }
     
-    // Call this function again to keep predicting when the browser is ready.
-    window.requestAnimationFrame(predictWebcam);
+    
+    /*
+    var delay = ( function() {
+	    var timer = 0;
+	    return function(callback, ms) {
+		clearTimeout (timer);
+		timer = setTimeout(callback, ms);
+	    };
+	})();
+	
+	delay(function(){
+	    console.log('speach_function');
+	    //setTimeout(function() { speak(objects_tags , predictions.length); window.requestAnimationFrame(predictWebcam);}, 3000);
+	    speak(objects_tags , predictions.length); 
+	    //window.requestAnimationFrame(predictWebcam);
+    
+	}, 2000 ); // end delay
+    
+    	*/
+    	speak(objects_tags , predictions.length);
+    
+    
   });
 }
 
