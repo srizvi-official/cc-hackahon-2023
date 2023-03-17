@@ -165,6 +165,12 @@ function predictWebcam() {
       // If we are over 66% sure we are sure we classified it right, draw it!
       if (predictions[n].score > 0.66) {
         const p = document.createElement('p');
+
+	// print object names
+	console.log(predictions[n].class);
+
+
+
         p.innerText = predictions[n].class  + ' - with ' 
             + Math.round(parseFloat(predictions[n].score) * 100) 
             + '% confidence.';
@@ -184,6 +190,17 @@ function predictWebcam() {
         liveView.appendChild(highlighter);
         liveView.appendChild(p);
         
+ // text to speech code
+	//window.speechSynthesis.cancel();
+
+        //const speech = new SpeechSynthesisUtterance();
+        //speech.lang = 'en-US';
+        //const text = predictions[n].class;
+        //speech.text = text;
+        //window.speechSynthesis.speak(speech);
+
+
+
         // Store drawn objects in memory so we can delete them next time around.
         children.push(highlighter);
         children.push(p);
